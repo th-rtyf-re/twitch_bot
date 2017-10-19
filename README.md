@@ -63,5 +63,5 @@ In the project folder, run:
 
 #### Linux
 ```
-.venv/bin/python.exe main.py
+.venv/bin/python main.py
 ```
