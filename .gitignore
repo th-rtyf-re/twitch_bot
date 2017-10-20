@@ -4,8 +4,6 @@
 # project files
 /.venv/
 /.idea/
-.gitignore
 
 # excluded files
 cfg.py
-
