@@ -25,6 +25,9 @@ class PyramidHandler(object):
         self.pyramid_size = 0
         self.increasing = True
 
+    def need_to_break_pyramid(self):
+        return len(self.pyramid) >= 2
+
     def detect_pyramid(self, msg):
         """ Detect if a chatter is making a pyramid.
 
@@ -69,6 +72,7 @@ class PyramidHandler(object):
                     # If the pyramid just starts decreasing
                     if self.increasing:
                         self.increasing = False
+                        self.pyramid_size = last_message_pyramid_stage
                         print("The pyramid is now decreasing")
 
                     # If the pyramid keeps decreasing
