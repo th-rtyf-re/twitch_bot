@@ -46,7 +46,7 @@ class PyramidHandler(object):
             # If the pyramid is increasing
             if current_message_pyramid_state - last_message_pyramid_stage == 1:
 
-                # If the pyramid from the start
+                # If the pyramid is increasing from the start
                 if self.increasing:
                     print("The pyramid is growing...")
                     self.pyramid.append(msg)
@@ -66,10 +66,11 @@ class PyramidHandler(object):
                     print("Pyramid completed PogChamp")
 
                 else:
-                    # If the pyramid just start decreasing
+                    # If the pyramid just starts decreasing
                     if self.increasing:
                         self.increasing = False
                         print("The pyramid is now decreasing")
+
                     # If the pyramid keeps decreasing
                     else:
                         print("The pyramid keeps decreasing")

@@ -46,9 +46,9 @@ class IRCClient(object):
     # CHAT TOOLS #
 
     def _is_op(self, username):
-        """ Return True if the user is an op.
+        """ Return True if the user is a moderator
         :param username: the username to check
-        :return: True if the user is an op, False otherwise
+        :return: True if the user is a moderator, False otherwise
         """
         return username in utils.flatten_dict_values(self._op_list)
 
@@ -81,7 +81,7 @@ class IRCClient(object):
                         self.chat("@{} {}".format(msg.author, cfg.MESSAGE_PYRAMID_COMPLETED))
 
     async def fill_op_list(self):
-        """ Fill the op list periodically (every 5s). """
+        """ Fill the moderator list periodically (every 5s). """
         while True:
             body, status_code = await utils.request(url=cfg.CHAT_URL, headers={"accept": "*/*"})
             try:
