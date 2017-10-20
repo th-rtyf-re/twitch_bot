@@ -24,24 +24,24 @@ class IRCClient(object):
         self._socket.send(bytes("NICK {nickname}\r\n".format(nickname=cfg.NICK), "utf-8"))
         self._socket.send(bytes("JOIN #{channel}\r\n".format(channel=cfg.CHAN), "utf-8"))
 
-    def chat(self, msg):
+    async def chat(self, msg):
         """ Send a message to the server.
         :param msg: the message to send
         """
         self._socket.send(bytes("PRIVMSG #{channel} :{message}\r\n".format(channel=cfg.CHAN, message=msg), "utf-8"))
 
-    def ban(self, user):
+    async def ban(self, user):
         """ Ban a user from the channel.
         :param user: The user to ban
         """
-        self.chat(".ban {user}".format(user=user))
+        await self.chat(".ban {user}".format(user=user))
 
-    def timeout(self, user, seconds=600):
+    async def timeout(self, user, seconds=600):
         """ Ban a user from the channel.
         :param user: The user to ban
         :param seconds: the length of the timeout in seconds (default 600)
         """
-        self.chat(".timeout {}".format(user, seconds))
+        await self.chat(".timeout {}".format(user, seconds))
 
     # CHAT TOOLS #
 
@@ -78,7 +78,7 @@ class IRCClient(object):
                 messages = self._parse_irc_bytes(received)
                 for msg in messages:
                     if pyramid_handler.detect_pyramid(msg):
-                        self.chat("@{} {}".format(msg.author, cfg.MESSAGE_PYRAMID_COMPLETED))
+                        await self.chat("@{} {}".format(msg.author, cfg.MESSAGE_PYRAMID_COMPLETED))
 
     async def fill_op_list(self):
         """ Fill the moderator list periodically (every 5s). """
