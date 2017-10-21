@@ -4,8 +4,8 @@ import re
 import socket
 
 import cfg
-import message
-import utils
+from twitchbot import message
+from twitchbot import utils
 
 
 class IRCClient(object):

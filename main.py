@@ -1,9 +1,12 @@
 # main
 # Program entry point
 
-import client
-import async
+import sys
 
+from twitchbot import async
+from twitchbot import client
+
+sys.path.append('twitchbot')
 
 def main():
 
