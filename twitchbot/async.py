@@ -1,4 +1,7 @@
 import asyncio
+import logging
+
+LOG = logging.getLogger('debug')
 
 
 class LoopManager:
@@ -10,12 +13,12 @@ class LoopManager:
             self._add_to_loop(coro)
 
     def _add_to_loop(self, coro):
-        print("Add '{coro}' to the event loop".format(coro=coro))
+        LOG.debug("Add '%s' to the event loop", coro)
         asyncio.ensure_future(coro(), loop=self.loop)
 
     def start(self):
         try:
             self.loop.run_forever()
         except (KeyboardInterrupt, SystemExit, ConnectionError):
-            print("Loop error")
+            LOG.error("Loop error")
             raise

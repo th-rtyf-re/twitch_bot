@@ -1,11 +1,14 @@
 import asyncio
 import json
+import logging
 import re
 import socket
 
 import cfg
 from twitchbot import message
 from twitchbot import utils
+
+LOG = logging.getLogger('debug')
 
 
 class IRCClient(object):
@@ -23,6 +26,7 @@ class IRCClient(object):
         self._socket.send(bytes("PASS {password}\r\n".format(password=cfg.PASS), "utf-8"))
         self._socket.send(bytes("NICK {nickname}\r\n".format(nickname=cfg.NICK), "utf-8"))
         self._socket.send(bytes("JOIN #{channel}\r\n".format(channel=cfg.CHAN), "utf-8"))
+        LOG.debug("Client connected")
 
     async def chat(self, msg):
         """ Send a message to the server.
@@ -35,6 +39,7 @@ class IRCClient(object):
         :param user: The user to ban
         """
         await self.chat(".ban {user}".format(user=user))
+        LOG.debug("%s has been banned", user)
 
     async def timeout(self, user, seconds=600):
         """ Ban a user from the channel.
@@ -42,6 +47,7 @@ class IRCClient(object):
         :param seconds: the length of the timeout in seconds (default 600)
         """
         await self.chat(".timeout {}".format(user, seconds))
+        LOG.debug("%s has been timed out for %ss", user, seconds)
 
     # CHAT TOOLS #
 
@@ -87,13 +93,13 @@ class IRCClient(object):
             try:
                 parsed_body = json.loads(body)
             except json.decoder.JSONDecodeError:
-                print("[{code}] Cannot retrieve stream chatters information (bad json format)".format(code=status_code))
+                LOG.warning("[%s] Cannot retrieve stream chatters information (bad json format)", status_code)
             except KeyError:
-                print("[{code}] Cannot retrieve stream chatters information (empty body)".format(code=status_code))
+                LOG.warning("[%s] Cannot retrieve stream chatters information (empty body)", status_code)
             except (ValueError, TypeError):
-                print("[{code}] Cannot retrieve stream chatters information".format(code=status_code))
+                LOG.warning("[%s] Cannot retrieve stream chatters information", status_code)
             else:
                 self._op_list = utils.reduce_dict(parsed_body['chatters'],
                                                   ["moderators", "global_mods", "admins", "staff"])
-                print("op_list", self._op_list)
-            await asyncio.sleep(5)
+                LOG.debug("Reloading op list: %s", self._op_list)
+            await asyncio.sleep(10)

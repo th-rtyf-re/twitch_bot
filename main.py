@@ -5,6 +5,7 @@ import sys
 
 from twitchbot import async
 from twitchbot import client
+from twitchbot import log
 
 sys.path.append('twitchbot')
 

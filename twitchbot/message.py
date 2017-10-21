@@ -1,4 +1,7 @@
+import logging
 import re
+
+LOG = logging.getLogger('debug')
 
 
 class Message(object):
@@ -40,7 +43,6 @@ class PyramidHandler(object):
         # If the message is a single word (a possible pyramid start)
         if re.match(r'\w+', msg.content) and not self.pyramid:
             self.pyramid.append(msg)
-            print("Potential pyramid start...")
 
         else:
             last_message_pyramid_stage = self.pyramid[-1].content.count(self.pyramid[0].content)
@@ -51,12 +53,12 @@ class PyramidHandler(object):
 
                 # If the pyramid is increasing from the start
                 if self.increasing:
-                    print("The pyramid is growing...")
+                    LOG.debug("A '%s' pyramid is being build (lvl %s)", self.pyramid[0].content, current_message_pyramid_state)
                     self.pyramid.append(msg)
 
                 # If the pyramid is starting increasing after a decrease
                 else:
-                    print("Combo failed!")
+                    LOG.debug("The combo has been broken (%s -> %s)", self.pyramid[-1].content.content, msg.content)
                     self._reset_pyramid()
 
             # If the pyramid is decreasing
@@ -64,23 +66,26 @@ class PyramidHandler(object):
 
                 # If the pyramid is completed
                 if current_message_pyramid_state == 1:
-                    self._reset_pyramid()
                     is_pyramid = True
-                    print("Pyramid completed PogChamp")
+                    LOG.debug("A %s-leveled '%s' pyramid has been completed by %s",
+                              self.pyramid_size, self.pyramid[0].content, msg.author)
+                    self._reset_pyramid()
 
                 else:
                     # If the pyramid just starts decreasing
                     if self.increasing:
                         self.increasing = False
                         self.pyramid_size = last_message_pyramid_stage
-                        print("The pyramid is now decreasing")
+                        LOG.debug("The %s-leveled '%s' pyramid is now decreasing",
+                                  self.pyramid_size, self.pyramid[0].content)
 
                     # If the pyramid keeps decreasing
                     else:
-                        print("The pyramid keeps decreasing")
+                        LOG.debug("The %s-leveled '%s' pyramid keeps decreasing",
+                                  self.pyramid_size, self.pyramid[0].content)
                     self.pyramid.append(msg)
             else:
                 self._reset_pyramid()
-                print("Combo broken")
+                LOG.debug("The combo has been broken (%s -> %s)", self.pyramid[-1].content, msg.content)
 
         return is_pyramid

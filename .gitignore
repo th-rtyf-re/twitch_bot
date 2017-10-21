@@ -1,6 +1,7 @@
 # temp files
 /__pycache__/
 */__pycache__/
+/log
 
 # project files
 /.venv/
