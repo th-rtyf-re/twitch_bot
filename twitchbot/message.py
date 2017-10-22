@@ -1,91 +1,97 @@
 import logging
 import re
 
+import cfg
+
 LOG = logging.getLogger('debug')
 
 
 class Message(object):
     """ Message class to easily deal with chat messages. """
 
-    def __init__(self, type, author, content):
-        self.type = type
+    def __init__(self, author, content, type=None):
         self.author = author
         self.content = content
+        self.type = type
+
+    @staticmethod
+    def factory(msg):
+        matched = re.match(cfg.CHAT_RE, msg)
+        author = matched.group(1)
+        content = matched.group(2)
+        msg = Message(author, content)
+        if msg.is_command():
+            matched = re.match(Command.REGEX, msg.content)
+            command = matched.group(1)
+            args = matched.group(2).split()
+            msg = Command(msg.author, msg.content, command, args)
+        return msg
+
+    def is_command(self):
+        return re.match(Command.REGEX, self.content)
 
 
-class PyramidHandler(object):
-    """ Detect a pyramids in the chat. """
+class Command(Message):
+    """ Command class (Message subclass). """
 
-    def __init__(self):
-        self.pyramid = []
-        self.pyramid_size = 0
-        self.increasing = True
+    REGEX = re.compile("^!(\w+)(.*)")
 
-    def _reset_pyramid(self):
-        """ Reset all the pyramid attributes. """
+    def __init__(self, author, content, command, args):
+        super(Command, self).__init__(author, content, "cmd")
+        self.command = command
+        self.args = args
 
-        self.pyramid = []
-        self.pyramid_size = 0
-        self.increasing = True
+    def process(self):
+        command_result = []
+        if self.command == "pyramid":
+            command_result = Pyramid.build(self.author, self.args)
+        return command_result
 
-    def need_to_break_pyramid(self):
-        return len(self.pyramid) >= 2
 
-    def detect_pyramid(self, msg):
-        """ Detect if a chatter is making a pyramid.
+class Pyramid:
+    """ Static class to build a pyramid. """
 
-        :param msg: The current chat message
-        :return: return True if a pyramid has been completed, False otherwise
+    MAX_SIZE = 8
+
+    @staticmethod
+    def _size_threshold(size):
+        """ Threshold the pyramid size to avoid huge pyramids
+
+        :param size: pyramid size set by the chatter
+        :return: pyramid size after thresholding
         """
+        return int(size) if int(size) < Pyramid.MAX_SIZE else Pyramid.MAX_SIZE
 
-        is_pyramid = False
+    @staticmethod
+    def build(author, args):
+        """ Build a pyramid based on input args
 
-        # If the message is a single word (a possible pyramid start)
-        if re.match(r'\w+', msg.content) and not self.pyramid:
-            self.pyramid.append(msg)
+        :param author: chatter who requested for a pyramid
+        :param args: input arguments
+        :return: list of pyramid parts
+        """
+        size = cfg.DEFAULT_PYRAMID_SIZE
+        symbol = cfg.DEFAULT_PYRAMID_SYMBOL
 
-        else:
-            last_message_pyramid_stage = self.pyramid[-1].content.count(self.pyramid[0].content)
-            current_message_pyramid_state = msg.content.count(self.pyramid[0].content)
-
-            # If the pyramid is increasing
-            if current_message_pyramid_state - last_message_pyramid_stage == 1:
-
-                # If the pyramid is increasing from the start
-                if self.increasing:
-                    LOG.debug("A '%s' pyramid is being build (lvl %s)", self.pyramid[0].content, current_message_pyramid_state)
-                    self.pyramid.append(msg)
-
-                # If the pyramid is starting increasing after a decrease
+        if len(args):
+            if len(args) == 1:
+                if args[0].isdigit():
+                    size = Pyramid._size_threshold(args[0])
                 else:
-                    LOG.debug("The combo has been broken (%s -> %s)", self.pyramid[-1].content.content, msg.content)
-                    self._reset_pyramid()
-
-            # If the pyramid is decreasing
-            elif current_message_pyramid_state - last_message_pyramid_stage == -1:
-
-                # If the pyramid is completed
-                if current_message_pyramid_state == 1:
-                    is_pyramid = True
-                    LOG.debug("A %s-leveled '%s' pyramid has been completed by %s",
-                              self.pyramid_size, self.pyramid[0].content, msg.author)
-                    self._reset_pyramid()
-
-                else:
-                    # If the pyramid just starts decreasing
-                    if self.increasing:
-                        self.increasing = False
-                        self.pyramid_size = last_message_pyramid_stage
-                        LOG.debug("The %s-leveled '%s' pyramid is now decreasing",
-                                  self.pyramid_size, self.pyramid[0].content)
-
-                    # If the pyramid keeps decreasing
-                    else:
-                        LOG.debug("The %s-leveled '%s' pyramid keeps decreasing",
-                                  self.pyramid_size, self.pyramid[0].content)
-                    self.pyramid.append(msg)
+                    symbol = args[0]
             else:
-                self._reset_pyramid()
-                LOG.debug("The combo has been broken (%s -> %s)", self.pyramid[-1].content, msg.content)
+                if args[0].isdigit():
+                    size = Pyramid._size_threshold(args[0])
+                    symbol = args[1]
+                elif args[1].isdigit():
+                    size = Pyramid._size_threshold(args[1])
+                    symbol = args[0]
 
-        return is_pyramid
+        LOG.debug("A pyramid is sent (author:%s|size:%s|symbol:%s)", author, size, symbol)
+        pyramid = []
+        for i in range(2 * size - 1):
+            block = [symbol] * (i + 1 if i < size else 2 * size - (i + 1))
+            block = " ".join(block)
+            pyramid.append(block)
+
+        return pyramid

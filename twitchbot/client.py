@@ -1,11 +1,10 @@
 import asyncio
 import json
 import logging
-import re
 import socket
 
 import cfg
-from twitchbot import message
+from twitchbot.message import Message
 from twitchbot import utils
 
 LOG = logging.getLogger('debug')
@@ -64,27 +63,22 @@ class IRCClient(object):
         :return: [(author, message), (author, message), ...]
         """
         byte_list = byte_sequence.split("\r\n")
-        parsed_messages = []
-        for byte in byte_list:
-            if byte:
-                if 'PRIVMSG' in byte:
-                    author = re.match(cfg.CHAT_RE, byte).group(1)
-                    content = re.match(cfg.CHAT_RE, byte).group(2)
-                    parsed_messages.append(message.Message('privmsg', author, content))
-        return parsed_messages
+        return [Message.factory(byte) for byte in byte_list if "PRIVMSG" in byte]
 
     # LOOPED COROUTINES #
 
     async def listen(self):
         """ Keep reading in the socket for new messages. """
-        pyramid_handler = message.PyramidHandler()
+
         while True:
             received = self._socket.recv(1024).decode()
             if received:
                 messages = self._parse_irc_bytes(received)
                 for msg in messages:
-                    if pyramid_handler.detect_pyramid(msg):
-                        await self.chat("@{} {}".format(msg.author, cfg.MESSAGE_PYRAMID_COMPLETED))
+                    if msg.type == "cmd":
+                        command_result = msg.process()
+                        for line in command_result:
+                            await self.chat(line)
 
     async def fill_op_list(self):
         """ Fill the moderator list periodically (every 5s). """
