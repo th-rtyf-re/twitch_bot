@@ -91,4 +91,5 @@ class Command(abc.ABC):
     @staticmethod
     def process(message):
         command, args = Command._get_command(message)
-        return Command.subclasses[command].process(args)
+        if command in Command.subclasses:
+            return Command.subclasses[command].process(args)

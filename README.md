@@ -44,8 +44,6 @@ PORT = 6667
 NICK = <bot nickname in lowercase>
 PASS = <chat token>
 CHAN = <channel the bot will be connected to in lowercase>
-RATE = (20/30)  # messages per second
-
 DEFAULT_PYRAMID_SYMBOL = <default pyramid char>
 DEFAULT_PYRAMID_SIZE = <default pyramid size>  # size is thresholded at 8
 ```
