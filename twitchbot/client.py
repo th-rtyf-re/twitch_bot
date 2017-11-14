@@ -4,7 +4,7 @@ import logging
 import socket
 
 import cfg
-from twitchbot.message import Message
+from twitchbot.commands import Command, Message
 from twitchbot import utils
 
 LOG = logging.getLogger('debug')
@@ -27,11 +27,11 @@ class IRCClient(object):
         self._socket.send(bytes("JOIN #{channel}\r\n".format(channel=cfg.CHAN), "utf-8"))
         LOG.debug("Client connected")
 
-    async def chat(self, msg):
+    async def chat(self, message):
         """ Send a message to the server.
-        :param msg: the message to send
+        :param message: the message to send
         """
-        self._socket.send(bytes("PRIVMSG #{channel} :{message}\r\n".format(channel=cfg.CHAN, message=msg), "utf-8"))
+        self._socket.send(bytes("PRIVMSG #{channel} :{message}\r\n".format(channel=cfg.CHAN, message=message), "utf-8"))
 
     async def ban(self, user):
         """ Ban a user from the channel.
@@ -57,13 +57,13 @@ class IRCClient(object):
         """
         return username in utils.flatten_dict_values(self._op_list)
 
-    def _parse_irc_bytes(self, byte_sequence):
+    def _get_bytes(self, byte_sequence):
         """ Parse an IRC byte sequence.
         :param byte_sequence: byte sequence to parse
         :return: [(author, message), (author, message), ...]
         """
         byte_list = byte_sequence.split("\r\n")
-        return [Message.factory(byte) for byte in byte_list if "PRIVMSG" in byte]
+        return [Message(byte) for byte in byte_list if Message.is_message(byte)]
 
     # LOOPED COROUTINES #
 
@@ -73,12 +73,11 @@ class IRCClient(object):
         while True:
             received = self._socket.recv(1024).decode()
             if received:
-                messages = self._parse_irc_bytes(received)
-                for msg in messages:
-                    if msg.type == "cmd":
-                        command_result = msg.process()
-                        for line in command_result:
-                            await self.chat(line)
+                messages = self._get_bytes(received)
+                for message in messages:
+                    if Command.is_command(message):
+                        for part in Command.process(message):
+                            await self.chat(part)
 
     async def fill_op_list(self):
         """ Fill the moderator list periodically (every 5s). """

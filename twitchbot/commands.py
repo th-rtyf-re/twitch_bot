@@ -1,3 +1,4 @@
+import abc
 import logging
 import re
 
@@ -7,48 +8,18 @@ LOG = logging.getLogger('debug')
 
 
 class Message(object):
-    """ Message class to easily deal with chat messages. """
 
-    def __init__(self, author, content, type=None):
-        self.author = author
-        self.content = content
-        self.type = type
+    def __init__(self, byte):
+        matched = re.match(cfg.CHAT_RE, byte)
+        self.author = matched.group(1)
+        self.content = matched.group(2)
 
     @staticmethod
-    def factory(msg):
-        matched = re.match(cfg.CHAT_RE, msg)
-        author = matched.group(1)
-        content = matched.group(2)
-        msg = Message(author, content)
-        if msg.is_command():
-            matched = re.match(Command.REGEX, msg.content)
-            command = matched.group(1)
-            args = matched.group(2).split()
-            msg = Command(msg.author, msg.content, command, args)
-        return msg
-
-    def is_command(self):
-        return re.match(Command.REGEX, self.content)
+    def is_message(byte):
+        return True if re.match(cfg.CHAT_RE, byte) else False
 
 
-class Command(Message):
-    """ Command class (Message subclass). """
-
-    REGEX = re.compile("^!(\w+)(.*)")
-
-    def __init__(self, author, content, command, args):
-        super(Command, self).__init__(author, content, "cmd")
-        self.command = command
-        self.args = args
-
-    def process(self):
-        command_result = []
-        if self.command == "pyramid":
-            command_result = Pyramid.build(self.author, self.args)
-        return command_result
-
-
-class Pyramid:
+class Pyramid(abc.ABCMeta):
     """ Static class to build a pyramid. """
 
     MAX_SIZE = 8
@@ -63,10 +34,9 @@ class Pyramid:
         return int(size) if int(size) < Pyramid.MAX_SIZE else Pyramid.MAX_SIZE
 
     @staticmethod
-    def build(author, args):
+    def process(args=None):
         """ Build a pyramid based on input args
 
-        :param author: chatter who requested for a pyramid
         :param args: input arguments
         :return: list of pyramid parts
         """
@@ -87,7 +57,7 @@ class Pyramid:
                     size = Pyramid._size_threshold(args[1])
                     symbol = args[0]
 
-        LOG.debug("A pyramid is sent (author:%s|size:%s|symbol:%s)", author, size, symbol)
+        LOG.debug("A pyramid is sent (size:%s|symbol:%s)", size, symbol)
         pyramid = []
         for i in range(2 * size - 1):
             block = [symbol] * (i + 1 if i < size else 2 * size - (i + 1))
@@ -95,3 +65,28 @@ class Pyramid:
             pyramid.append(block)
 
         return pyramid
+
+
+class Command(abc.ABC):
+
+    REGEX = re.compile("^!(\w+)(.*)")
+
+    subclasses = {
+        'pyramid': Pyramid
+    }
+
+    @staticmethod
+    def is_command(message):
+        return True if re.match(Command.REGEX, message.content) else False
+
+    @staticmethod
+    def _get_command(message):
+        matched = re.match(Command.REGEX, message.content)
+        command = matched.group(1)
+        args = matched.group(2).split()
+        return command, args
+
+    @staticmethod
+    def process(message):
+        command, args = Command._get_command(message)
+        return Command.subclasses[command].process(args)
