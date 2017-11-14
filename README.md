@@ -1,8 +1,7 @@
 # Twitch IRC Bot
 
 A Twitch IRC Bot based on asynchronous programming (asyncio)
-- Detects pyramids in the chat
-- Tags the author of the pyramid
+- Sends pyramids
 
 ### Create a Twitch account for the bot
 
@@ -47,10 +46,8 @@ PASS = <chat token>
 CHAN = <channel the bot will be connected to in lowercase>
 RATE = (20/30)  # messages per second
 
-CHAT_RE = ":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.*)"
-CHAT_URL = "https://tmi.twitch.tv/group/user/{user}/chatters".format(user=CHAN.lower())
-MESSAGE_PYRAMID_COMPLETED = <message sent when someone does a complet pyramid>
-
+DEFAULT_PYRAMID_SYMBOL = <default pyramid char>
+DEFAULT_PYRAMID_SIZE = <default pyramid size>  # size is thresholded at 8
 ```
 ### Run the bot
 

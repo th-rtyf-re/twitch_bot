@@ -13,6 +13,8 @@ LOG = logging.getLogger('debug')
 class IRCClient(object):
     """ Client to interact with the chat. """
 
+    CHAT_URL = "https://tmi.twitch.tv/group/user/{user}/chatters".format(user=cfg.CHAN.lower())
+
     def __init__(self):
         self._socket = socket.socket()
         self._op_list = {}
@@ -82,7 +84,7 @@ class IRCClient(object):
     async def fill_op_list(self):
         """ Fill the moderator list periodically (every 5s). """
         while True:
-            body, status_code = await utils.request(url=cfg.CHAT_URL, headers={"accept": "*/*"})
+            body, status_code = await utils.request(url=IRCClient.CHAT_URL, headers={"accept": "*/*"})
             try:
                 parsed_body = json.loads(body)
             except json.decoder.JSONDecodeError:

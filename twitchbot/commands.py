@@ -9,14 +9,16 @@ LOG = logging.getLogger('debug')
 
 class Message(object):
 
+    CHAT_RE = ":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.*)"
+
     def __init__(self, byte):
-        matched = re.match(cfg.CHAT_RE, byte)
+        matched = re.match(Message.CHAT_RE, byte)
         self.author = matched.group(1)
         self.content = matched.group(2)
 
     @staticmethod
     def is_message(byte):
-        return True if re.match(cfg.CHAT_RE, byte) else False
+        return True if re.match(Message.CHAT_RE, byte) else False
 
 
 class Pyramid(abc.ABCMeta):
