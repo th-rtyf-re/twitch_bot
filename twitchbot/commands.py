@@ -92,4 +92,7 @@ class Command(abc.ABC):
     def process(message):
         command, args = Command._get_command(message)
         if command in Command.subclasses:
-            return Command.subclasses[command].process(args)
+            try:
+                return Command.subclasses[command].process(args)
+            except:
+                LOG.exception("cannot process command")
