@@ -3,21 +3,23 @@
 
 import sys
 
-from twitchbot import async
-from twitchbot import client
-from twitchbot import log
+import asyncio
 
-sys.path.append('twitchbot')
+from twitch_bot import client
+from twitch_bot import log
+
+sys.path.append('twitch_bot')
+
 
 def main():
 
     irc_client = client.IRCClient()
     irc_client.connect()
 
-    async.LoopManager(
-        irc_client.listen,         # Listen to the input messages
-        irc_client.fill_op_list    # Fill the viewers list
-    ).start()
+    loop = asyncio.get_event_loop()
+    asyncio.ensure_future(irc_client.listen(), loop=loop)
+    asyncio.ensure_future(irc_client.fill_mod_list(), loop=loop)
+    loop.run_forever()
 
 
 if __name__ == '__main__':

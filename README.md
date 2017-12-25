@@ -31,9 +31,9 @@ virtualenv .venv
 
 
 
-### Create a ```cfg.py``` file
+### Create a `cfg.py` file
 
-Create the file ```TwitchBot/cfg.py``` and fill it as follow:
+Create the file `TwitchBot/cfg.py` and fill it as follow:
 
 ```
 # cfg.py
@@ -44,8 +44,11 @@ PORT = 6667
 NICK = <bot nickname in lowercase>
 PASS = <chat token>
 CHAN = <channel the bot will be connected to in lowercase>
+
+VALID_COMMANDS = ["pyramid"]
+
 DEFAULT_PYRAMID_SYMBOL = <default pyramid char>
-DEFAULT_PYRAMID_SIZE = <default pyramid size>  # size is thresholded at 8
+DEFAULT_PYRAMID_SIZE = <default pyramid size>  # size is thresholded at 5
 ```
 ### Run the bot
 
