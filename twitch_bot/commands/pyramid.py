@@ -42,7 +42,9 @@ class Pyramid(irc.Command):
                     size = Pyramid._size_threshold(self.args[1])
                     symbol = self.args[0]
 
-        LOG.debug("%s has sent a pyramid (size:%s|symbol:%s)", self.author, size, symbol)
+        LOG.debug("{author} has sent a pyramid (size:{size}|symbol:{symbol})".format(author=self.author,
+                                                                                     size=size,
+                                                                                     symbol=symbol))
         pyramid = []
         for i in range(2 * size - 1):
             block = [symbol] * (i + 1 if i < size else 2 * size - (i + 1))

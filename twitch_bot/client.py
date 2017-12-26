@@ -55,7 +55,7 @@ class IRCClient(object):
         :param user: The user to ban
         :param seconds: the length of the timeout in seconds (default 600)
         """
-        await self.send_message(".timeout {}".format(user, seconds))
+        await self.send_message(".timeout {user} {seconds}".format(user=user, seconds=seconds))
         LOG.debug("%s has been timed out for %ss", user, seconds)
 
     def _is_mod(self, username):
