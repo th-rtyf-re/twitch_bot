@@ -33,7 +33,7 @@ virtualenv .venv
 
 ### Create a `cfg.py` file
 
-Create the file `TwitchBot/cfg.py` and fill it as follow:
+Create the file `cfg.py` at the root of the project directory and fill it as follow:
 
 ```
 # cfg.py
