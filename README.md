@@ -41,7 +41,7 @@ Create the file `TwitchBot/cfg.py` and fill it as follow:
 
 HOST = "irc.twitch.tv"
 PORT = 6667
-NICK = <bot nickname in lowercase>
+NICK = <bot name in lowercase>
 PASS = <chat token>
 CHAN = <channel the bot will be connected to in lowercase>
 
