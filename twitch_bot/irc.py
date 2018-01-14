@@ -46,11 +46,16 @@ class UnknownCommandException(Exception):
     """ Unknown command exception """
 
 
+class WrongArgumentException(Exception):
+    """ Wrong argument exception """
+
+
 class Command(abc.ABC):
 
     COMMAND_RE = "^!(\w+)(.*)"
 
     VALID_COMMANDS = {}
+    BANNED_PREFIX = ["!", ".", "/"]
 
     def __init__(self, author, command, args):
         self.author = author
@@ -90,6 +95,9 @@ class Command(abc.ABC):
         matched = re.match(Command.COMMAND_RE, message.content)
         command = matched.group(1)
         args = matched.group(2).split()
+        for arg in args:
+            if arg[0] in Command.BANNED_PREFIX:
+                raise WrongArgumentException
         try:
             command_class = Command.VALID_COMMANDS[command]
             return command_class(message.author, command, args)

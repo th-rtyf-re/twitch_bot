@@ -5,7 +5,7 @@ import socket
 
 import cfg
 
-from twitch_bot.irc import Command, Message, UnknownCommandException
+from twitch_bot.irc import Command, Message, UnknownCommandException, WrongArgumentException
 from twitch_bot import utils
 
 LOG = logging.getLogger('debug')
@@ -106,4 +106,6 @@ class IRCClient(object):
                         for part in command_result:
                             await self.send_message(part)
                     except UnknownCommandException:
+                        pass
+                    except WrongArgumentException:
                         pass
