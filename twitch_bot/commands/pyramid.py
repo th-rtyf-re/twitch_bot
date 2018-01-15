@@ -20,7 +20,7 @@ class Pyramid(irc.Command):
         """
         return int(size) if int(size) < Pyramid.MAX_SIZE else Pyramid.MAX_SIZE
 
-    def process(self):
+    def active_process(self):
         """ Build a pyramid based on input args
 
         :return: list of pyramid parts
@@ -52,3 +52,6 @@ class Pyramid(irc.Command):
             pyramid.append(block)
 
         return pyramid
+    
+    def passive_process(self):
+        pass
