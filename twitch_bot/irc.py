@@ -106,5 +106,9 @@ class Command(abc.ABC):
             raise UnknownCommandException
 
     @abc.abstractmethod
-    def process(self):
+    def active_process(self):
+        """ Process the command """
+    
+    @abc.abstractmethod
+    def passive_process(self):
         """ Process the command """
