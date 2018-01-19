@@ -107,5 +107,13 @@ class IRCClient(object):
                             await self.send_message(part)
                     except UnknownCommandException:
                         pass
-                    except WrongArgumentException:
-                        pass
+                else:
+                	try:
+                		for c in list(Command.VALID_COMMANDS):
+                			message.content = "!"+c+" "+message.content
+                			command = Command.get_command(message)
+                			command_result = command.passive_process()
+                			for part in command_result:
+                				await self.send_message(part)
+                	except UnknownCommandException:
+                		pass
